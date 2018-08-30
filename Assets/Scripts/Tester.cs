@@ -1,8 +1,6 @@
-﻿using Debuging;
-using UnityEngine;
-using UnityEngine.Playables;
+﻿using UnityEngine;
 
-namespace Physics
+namespace Graphene.Physics
 {
     public class Tester: MonoBehaviour
     {
@@ -19,12 +17,12 @@ namespace Physics
 
         private void Trigger(RaycastHit2D obj)
         {
-            ConsoleDebug.Log("Triggered on " + obj.collider.name);
+            Debug.Log("Triggered on " + obj.collider.name);
         }
 
         private void Collision(RaycastHit2D obj)
         {
-            ConsoleDebug.Log("Collided on " + obj.collider.name);
+            Debug.Log("Collided on " + obj.collider.name);
         }
 
         private void Update()

@@ -1,10 +1,8 @@
 {
     "name": "Physics",
     "references": [
-        "CameraSystem",
         "Utils",
-        "UtilsEditor",
-        "Debuging"
+        "UtilsEditor"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

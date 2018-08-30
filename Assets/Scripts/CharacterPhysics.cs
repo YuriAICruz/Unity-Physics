@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Physics
+namespace Graphene.Physics
 {
     public class CharacterPhysics : PhysycsBase
     {

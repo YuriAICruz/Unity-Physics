@@ -2,10 +2,10 @@
 using System.Collections;
 using System.IO;
 using System.Threading;
-using Physics.GroundSystem;
+using Graphene.Physics.GroundSystem;
 using UnityEngine;
 
-namespace Physics
+namespace Graphene.Physics
 {
     [Serializable]
     public class ZeldaLikeEnemyPhysics : ZeldaLikePhysics

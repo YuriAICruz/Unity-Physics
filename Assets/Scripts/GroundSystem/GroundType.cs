@@ -1,4 +1,4 @@
-﻿namespace Physics.GroundSystem
+﻿namespace Graphene.Physics.GroundSystem
 {
     public enum GroundType
     {

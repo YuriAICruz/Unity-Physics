@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Physics
+namespace Graphene.Physics
 {
     [Serializable]
     public abstract class PhysycsBase
@@ -49,7 +49,7 @@ namespace Physics
             return true;
         }
 
-        protected int CheckCollision(Vector2 position)
+        public int CheckCollision(Vector2 position)
         {
             _contactFilter.useTriggers = false;
             CheckTriggerCollision(position);

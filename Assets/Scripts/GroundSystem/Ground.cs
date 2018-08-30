@@ -1,10 +1,10 @@
 ﻿using System;
 using UnityEngine;
 #if UNITY_EDITOR
-using Utils.Editor;
+using Graphene.Utils.Editor;
 #endif
 
-namespace Physics.GroundSystem
+namespace Graphene.Physics.GroundSystem
 {
     [Flags]
     public enum Sides

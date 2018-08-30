@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Physics
+namespace Graphene.Physics
 {
     [Serializable]
     public class AnjanathPhysics : ZeldaLikeEnemyPhysics

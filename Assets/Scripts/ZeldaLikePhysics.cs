@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
-using System.Threading;
-using Physics.GroundSystem;
+using Graphene.Physics.GroundSystem;
+using Graphene.Utils;
 using UnityEngine;
-using Utils;
 
-namespace Physics
+namespace Graphene.Physics
 {
     [Serializable]
     public class ZeldaLikePhysics : PhysycsBase
