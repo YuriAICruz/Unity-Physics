@@ -13,7 +13,7 @@ namespace Graphene.Physics
 
         public int PositionZ;
 
-        private Collider2D _collider;
+        protected Collider2D _collider;
         protected RaycastHit2D[] _results = new RaycastHit2D[1];
         protected RaycastHit2D[] _triggerResults = new RaycastHit2D[1];
 
@@ -23,13 +23,15 @@ namespace Graphene.Physics
         private RaycastHit2D _lastTrigger, _lastCollider;
 
         private ContactFilter2D _contactFilter;
+        protected LayerMask _layerMask;
 
         public void SetCollider(Collider2D collider)
         {
             _collider = collider;
 
+            _layerMask = Physics2D.GetLayerCollisionMask(collider.gameObject.layer);
             _contactFilter = new ContactFilter2D();
-            _contactFilter.SetLayerMask((LayerMask) Physics2D.GetLayerCollisionMask(collider.gameObject.layer));
+            _contactFilter.SetLayerMask(_layerMask);
         }
 
         public void SetPosition(Vector2 position)
