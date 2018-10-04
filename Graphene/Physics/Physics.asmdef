@@ -1,8 +1,8 @@
 {
     "name": "Physics",
     "references": [
-        "Utils",
-        "UtilsEditor"
+        "Graphene.Utils",
+        "Graphene.UtilsEditor"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
