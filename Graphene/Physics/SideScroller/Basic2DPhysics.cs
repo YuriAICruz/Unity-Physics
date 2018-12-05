@@ -19,18 +19,18 @@ namespace Graphene.Physics.SideScroller
         public event Action<bool> JumpState, GroundState;
         private LayerMask _groundMask;
 
-        protected Vector3[] _floor = new Vector3[]
+        protected Vector3Int[] _floor = new Vector3Int[]
         {
-            new Vector3(0, 0),
-            new Vector3(0, 1),
-            new Vector3(0, -1),
+            new Vector3Int(0, 0, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0),
         };
 
-        protected Vector3[] _sides = new Vector3[]
+        protected Vector3Int[] _sides = new Vector3Int[]
         {
-            new Vector3(0, 0),
-            new Vector3(1, 0),
-            new Vector3(-1, 0),
+            new Vector3Int(0, 0, 0),
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
         };
 
         public Basic2DPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera)
@@ -42,7 +42,7 @@ namespace Graphene.Physics.SideScroller
         {
             for (int i = 0; i < _sides.Length; i++)
             {
-                var pos = Collider.transform.position + (_sides[i] * _radius) + Vector3.up * _height;
+                var pos = Collider.transform.position + ((Vector3)_sides[i] * _radius * 0.4f) + Vector3.up * _height;
 
                 var hit = Physics2D.Raycast(pos, Vector2.down, _height * 1.1f, _groundMask);
 

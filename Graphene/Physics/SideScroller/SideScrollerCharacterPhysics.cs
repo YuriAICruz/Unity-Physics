@@ -17,6 +17,11 @@ namespace Graphene.Physics.SideScroller
         public event Action OnEdge;
         public event Action<int> OnWallClose;
 
+        private int _wall = 0;
+
+        private bool _canJump;
+        private float _wallDistance;
+
         public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera, float gravity) : base(rigidbody, collider, camera)
         {
             _collider = collider;
@@ -29,6 +34,29 @@ namespace Graphene.Physics.SideScroller
             SetCollider(collider, rigidbody);
 
             _movementMask |= 1 << LayerMask.NameToLayer("Level");
+        }
+
+        public void Jump(bool jump, float speed, float wallJumpSpeed)
+        {
+            if (jump && (_canJump || _wall != 0 && _wallDistance <= _radius * 1.1f))
+            {
+                if (_wall != 0)
+                {
+                    _velocity.x = -wallJumpSpeed * _sides[_wall].x;
+                }
+                _velocity.y = speed;
+            }
+            else if (!jump)
+            {
+                _velocity.y = Mathf.Min(0, _velocity.y);
+            }
+            _canJump = false;
+            SetJumpState(jump);
+        }
+
+        public float Speed()
+        {
+            return _velocity.magnitude;
         }
 
         public void Move(Vector2 dir, float speed, bool transformDir = true)
@@ -49,15 +77,24 @@ namespace Graphene.Physics.SideScroller
 
             CheckSurround(wdir);
 
-            _velocity.x = moveDirection.x * speed;
-
-            if (!_grounded || _velocity.magnitude <= 0)
+            if (_wall == 0 ||
+                (int) Mathf.Ceil(dir.x) != _sides[_wall].x ||
+                _grounded ||
+                (!_jumping && (int) Mathf.Ceil(dir.x) == _sides[_wall].x && _wallDistance > _radius * 1.1f)
+            )
             {
-                _velocity.x = wdir.x * speed;
+                _velocity.x = moveDirection.x * speed;
+
+                if (!_grounded || _velocity.magnitude <= 0)
+                {
+                    _velocity.x = wdir.x * speed;
+                }
             }
 
             if (_grounded)
             {
+                _canJump = true;
+
                 if (!_jumping)
                     _velocity.y = moveDirection.y * speed;
 
@@ -65,24 +102,26 @@ namespace Graphene.Physics.SideScroller
             }
             else
             {
-                _velocity.y -= _gravity * Time.deltaTime;
+                if (_wall != 0 && (int) Mathf.Ceil(dir.x) == _sides[_wall].x && _wallDistance <= _radius * 1.1f)
+                {
+                    if (_jumping)
+                    {
+                        //_velocity.x -= _wall * Time.deltaTime * _wallJumpSpeed;
+                    }
+                    else
+                    {
+                        _velocity.y = 0;
+                    }
+                }
+                else
+                {
+                    _velocity.y -= _gravity * Time.deltaTime;
+                }
 
                 _velocity.y = Mathf.Max(_velocity.y, -_gravity * 2);
             }
 
             Rigidbody.velocity = _velocity;
-        }
-
-        public void Jump(bool jump, float speed)
-        {
-            if (jump)
-                _velocity.y = speed;
-            SetJumpState(jump);
-        }
-
-        public float Speed()
-        {
-            return _velocity.magnitude;
         }
 
         private Vector2 GetGroundOrient(Vector2 wdir)
@@ -123,22 +162,28 @@ namespace Graphene.Physics.SideScroller
         {
             Vector2 pos = new Vector2(_collider.transform.position.x, _collider.transform.position.y) + Vector2.up;
 
+            _wall = 0;
             for (int i = 1, n = _sides.Length; i < n; i++)
             {
                 var dir = _collider.transform.TransformDirection(_sides[i]);
-                var rayhit = Physics2D.Raycast(pos, new Vector2(dir.x, dir.y), _radius * 2, _movementMask);
+                var rayhit = Physics2D.Raycast(pos, new Vector2(dir.x, dir.y), _radius * 4, _movementMask);
+
                 if (rayhit.collider == null) continue;
 
 
-                if (rayhit.distance <= _radius)
+                _wall = i;
+                _wallDistance = rayhit.distance;
+                if (rayhit.distance <= _radius * 1.1f)
                 {
                     OnWallClose?.Invoke(i);
 
                     var heigt = CheckWallHeigt(rayhit);
 
+                    // Set position
                     //_collider.transform.position = new Vector3( rayhit.point.x - _radius * _sides[i].x, Collider.transform.position.y, Collider.transform.position.z );
 
                     Debug.DrawLine(pos, rayhit.point, Color.red);
+                    Debug.DrawRay(pos, Vector2.up * heigt, Color.blue);
                     return;
                 }
                 else
