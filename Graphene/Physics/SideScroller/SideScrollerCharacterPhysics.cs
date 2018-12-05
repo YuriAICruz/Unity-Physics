@@ -70,17 +70,18 @@ namespace Graphene.Physics.SideScroller
             }
 
             dir = Vector2.ClampMagnitude(dir, 1);
+            var roundDir = (int) (Mathf.Sign(dir.x) * Mathf.Ceil(Mathf.Abs(dir.x)));
 
             Vector2 wdir = transformDir ? _camera.TransformDirection(new Vector3(dir.x, dir.y)) : new Vector3(dir.x, dir.y);
-
+            
             var moveDirection = GetGroundOrient(wdir).normalized;
 
             CheckSurround(wdir);
 
             if (_wall == 0 ||
-                (int) Mathf.Ceil(dir.x) != _sides[_wall].x ||
+                roundDir != _sides[_wall].x ||
                 _grounded ||
-                (!_jumping && (int) Mathf.Ceil(dir.x) == _sides[_wall].x && _wallDistance > _radius * 1.1f)
+                (!_jumping &&  _wallDistance > _radius * 1.1f)
             )
             {
                 _velocity.x = moveDirection.x * speed;
@@ -102,13 +103,9 @@ namespace Graphene.Physics.SideScroller
             }
             else
             {
-                if (_wall != 0 && (int) Mathf.Ceil(dir.x) == _sides[_wall].x && _wallDistance <= _radius * 1.1f)
+                if (_wall != 0 && roundDir == _sides[_wall].x && _wallDistance <= _radius * 1.1f)
                 {
-                    if (_jumping)
-                    {
-                        //_velocity.x -= _wall * Time.deltaTime * _wallJumpSpeed;
-                    }
-                    else
+                    if (!_jumping)
                     {
                         _velocity.y = 0;
                     }
@@ -118,7 +115,7 @@ namespace Graphene.Physics.SideScroller
                     _velocity.y -= _gravity * Time.deltaTime;
                 }
 
-                _velocity.y = Mathf.Max(_velocity.y, -_gravity * 2);
+                _velocity.y = Mathf.Max(_velocity.y, -_gravity);
             }
 
             Rigidbody.velocity = _velocity;
@@ -166,10 +163,9 @@ namespace Graphene.Physics.SideScroller
             for (int i = 1, n = _sides.Length; i < n; i++)
             {
                 var dir = _collider.transform.TransformDirection(_sides[i]);
-                var rayhit = Physics2D.Raycast(pos, new Vector2(dir.x, dir.y), _radius * 4, _movementMask);
+                var rayhit = Physics2D.Raycast(pos, new Vector2(dir.x, dir.y), _radius * 5, _movementMask);
 
                 if (rayhit.collider == null) continue;
-
 
                 _wall = i;
                 _wallDistance = rayhit.distance;
