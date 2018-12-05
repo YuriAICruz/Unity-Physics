@@ -12,32 +12,44 @@ namespace Graphene.Physics.SideScroller
         protected bool _jumping;
 
         protected float _radius;
+        protected float _height;
 
-        protected Collider _standingCollider;
+        protected Collider2D _standingCollider;
 
         public event Action<bool> JumpState, GroundState;
+        private LayerMask _groundMask;
+
+        protected Vector3[] _floor = new Vector3[]
+        {
+            new Vector3(0, 0),
+            new Vector3(0, 1),
+            new Vector3(0, -1),
+        };
 
         protected Vector3[] _sides = new Vector3[]
         {
             new Vector3(0, 0),
             new Vector3(1, 0),
-            new Vector3(0, 1),
             new Vector3(-1, 0),
-            new Vector3(0, -1),
         };
+
+        public Basic2DPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera)
+        {
+            _groundMask |= 1 << LayerMask.NameToLayer("Level");
+        }
 
         protected void CheckGround()
         {
-            RaycastHit hit;
-
             for (int i = 0; i < _sides.Length; i++)
             {
-                var pos = Collider.transform.position + (_sides[i] * _radius)  + Vector3.up;
+                var pos = Collider.transform.position + (_sides[i] * _radius) + Vector3.up * _height;
 
-                if (!UnityEngine.Physics.Raycast(pos, Vector3.down, out hit, 1.1f)) continue;
+                var hit = Physics2D.Raycast(pos, Vector2.down, _height * 1.1f, _groundMask);
+
+                if (hit.collider == null) continue;
 
                 if (_debug)
-                    Debug.DrawRay(pos, Vector3.down * 1.1f, Color.green);
+                    Debug.DrawRay(pos, Vector2.down * 1.1f, Color.green);
 
                 _standingCollider = hit.collider;
 
@@ -54,7 +66,7 @@ namespace Graphene.Physics.SideScroller
             }
 
             _standingCollider = null;
-            
+
             SetGrounded(false);
         }
 

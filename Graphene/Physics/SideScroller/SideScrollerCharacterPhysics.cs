@@ -9,28 +9,32 @@ namespace Graphene.Physics.SideScroller
         private Transform _camera;
         private LayerMask _movementMask;
         private bool _climbing;
-        private Vector3 _velocity;
+        private Vector2 _velocity;
         private float _stepAngle;
-        private float _gravity = 9.8f;
+        private float _gravity;
         private bool _blockMovement;
-        
+
         public event Action OnEdge;
         public event Action<int> OnWallClose;
 
-        public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera)
+        public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera, float gravity) : base(rigidbody, collider, camera)
         {
             _collider = collider;
             _camera = camera;
-            
+            _gravity = gravity;
+
+            _radius = collider.size.x / 2;
+            _height = collider.size.y;
+
             SetCollider(collider, rigidbody);
-            
+
             _movementMask |= 1 << LayerMask.NameToLayer("Level");
         }
-    
+
         public void Move(Vector2 dir, float speed, bool transformDir = true)
         {
             CheckGround();
-            
+
             if (_blockMovement)
             {
                 Rigidbody.velocity += Vector2.down * _gravity * Time.deltaTime;
@@ -46,12 +50,10 @@ namespace Graphene.Physics.SideScroller
             CheckSurround(wdir);
 
             _velocity.x = moveDirection.x * speed;
-            _velocity.z = moveDirection.y * speed;
 
             if (!_grounded || _velocity.magnitude <= 0)
             {
                 _velocity.x = wdir.x * speed;
-                _velocity.z = wdir.y * speed;
             }
 
             if (_grounded)
@@ -71,16 +73,18 @@ namespace Graphene.Physics.SideScroller
             Rigidbody.velocity = _velocity;
         }
 
-        public void Jump(bool b)
+        public void Jump(bool jump, float speed)
         {
-            
+            if (jump)
+                _velocity.y = speed;
+            SetJumpState(jump);
         }
 
         public float Speed()
         {
             return _velocity.magnitude;
         }
-        
+
         private Vector2 GetGroundOrient(Vector2 wdir)
         {
             if (wdir.magnitude <= 0) return Vector2.zero;
@@ -114,7 +118,7 @@ namespace Graphene.Physics.SideScroller
 
             return cross;
         }
-        
+
         private void CheckSurround(Vector2 wdir)
         {
             Vector2 pos = new Vector2(_collider.transform.position.x, _collider.transform.position.y) + Vector2.up;
@@ -122,16 +126,17 @@ namespace Graphene.Physics.SideScroller
             for (int i = 1, n = _sides.Length; i < n; i++)
             {
                 var dir = _collider.transform.TransformDirection(_sides[i]);
-                var rayhit = Physics2D.Raycast(pos, new Vector2(dir.x, dir.y), 2, _movementMask);
+                var rayhit = Physics2D.Raycast(pos, new Vector2(dir.x, dir.y), _radius * 2, _movementMask);
                 if (rayhit.collider == null) continue;
 
 
-                if (rayhit.distance < 1f)
+                if (rayhit.distance <= _radius)
                 {
                     OnWallClose?.Invoke(i);
 
-                    if (i == 2 || i == 4) // left - right
-                        CheckWallHeigt(rayhit);
+                    var heigt = CheckWallHeigt(rayhit);
+
+                    //_collider.transform.position = new Vector3( rayhit.point.x - _radius * _sides[i].x, Collider.transform.position.y, Collider.transform.position.z );
 
                     Debug.DrawLine(pos, rayhit.point, Color.red);
                     return;
@@ -144,7 +149,7 @@ namespace Graphene.Physics.SideScroller
 
             OnWallClose?.Invoke(0);
         }
-        
+
         private float CheckBounds(RaycastHit2D rayhit)
         {
             var bounds = rayhit.collider.bounds;
@@ -178,7 +183,7 @@ namespace Graphene.Physics.SideScroller
 //            Debug.Log(result);
             return result;
         }
-        
+
         private float CheckWallHeigt(RaycastHit2D rayhit)
         {
             var bounds = rayhit.collider.bounds;
@@ -210,7 +215,7 @@ namespace Graphene.Physics.SideScroller
             {
                 Debug.DrawLine(corners[side], corners[(side + 1) % corners.Length], Color.blue);
                 var dist = bounds.extents.y - _collider.transform.position.y;
-                
+
                 return dist;
             }
 
