@@ -8,7 +8,7 @@ namespace Graphene.Physics.SideScroller
         public Collider2D Collider;
         public Rigidbody2D Rigidbody;
         protected bool _debug = true;
-        protected bool _grounded;
+        public bool Grounded { get; protected set; }
         protected bool _jumping;
 
         protected float _radius;
@@ -53,7 +53,7 @@ namespace Graphene.Physics.SideScroller
 
                 _standingCollider = hit.collider;
 
-                if (!_grounded)
+                if (!Grounded)
                 {
                     Collider.transform.position = new Vector3(Collider.transform.position.x, hit.point.y, Collider.transform.position.z);
 
@@ -72,10 +72,10 @@ namespace Graphene.Physics.SideScroller
 
         void SetGrounded(bool state)
         {
-            if (_grounded != state)
+            if (Grounded != state)
                 GroundState?.Invoke(state);
 
-            _grounded = state;
+            Grounded = state;
         }
 
         public virtual void SetCollider(Collider2D collider, Rigidbody2D rigidbody)

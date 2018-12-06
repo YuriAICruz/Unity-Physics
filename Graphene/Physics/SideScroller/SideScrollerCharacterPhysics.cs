@@ -27,6 +27,9 @@ namespace Graphene.Physics.SideScroller
         private float _wallDistance;
         private float _wallSlide;
         private Coroutine _throwRoutine;
+        private Coroutine _dashRoutine;
+        private bool _dashEffect;
+        private float _dashSpeedModifier = 1.4f;
 
         public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera, float gravity, float wallSlide) : base(rigidbody, collider, camera)
         {
@@ -35,7 +38,7 @@ namespace Graphene.Physics.SideScroller
             _gravity = gravity;
 
             _radius = collider.size.x / 2;
-            _height = collider.size.y;
+            _height = collider.size.y / 2;
 
             _wallSlide = wallSlide;
 
@@ -50,7 +53,7 @@ namespace Graphene.Physics.SideScroller
             {
                 if (_wall != 0)
                 {
-                    _velocity.x = -wallJumpSpeed * _sides[_wall].x;
+                    _velocity.x = -wallJumpSpeed * _sides[_wall].x * (_dashEffect ? _dashSpeedModifier : 1);
                 }
                 _velocity.y = speed;
             }
@@ -69,6 +72,9 @@ namespace Graphene.Physics.SideScroller
 
         public void Move(Vector2 dir, float speed, bool transformDir = true)
         {
+            if (_dashEffect)
+                speed *= _dashSpeedModifier;
+            
             CheckGround();
 
             if (_blockMovement)
@@ -88,19 +94,20 @@ namespace Graphene.Physics.SideScroller
 
             if (_wall == 0 ||
                 roundDir != _sides[_wall].x ||
-                _grounded ||
+                Grounded ||
                 (!_jumping && _wallDistance > _radius * 1.1f)
             )
             {
                 _velocity.x = moveDirection.x * speed;
 
-                if (!_grounded || _velocity.magnitude <= 0)
+                if (!Grounded || _velocity.magnitude <= 0)
                 {
                     _velocity.x = wdir.x * speed;
                 }
             }
 
-            if (_grounded)
+            Sliding = false;
+            if (Grounded)
             {
                 _canJump = true;
 
@@ -270,6 +277,47 @@ namespace Graphene.Physics.SideScroller
             return 0;
         }
 
+        public void Dash(float dir, float speed, float duration)
+        {
+            if(Sliding) return;
+            
+            if (_dashRoutine != null)
+                GlobalCoroutineManager.Instance.StopCoroutine(_dashRoutine);
+
+            _dashRoutine = GlobalCoroutineManager.Instance.StartCoroutine(DashRoutine(dir, speed, duration));
+        }
+
+        IEnumerator DashRoutine(float dir, float speed, float duration)
+        {
+            _blockMovement = true;
+            _dashEffect = true;
+
+            var t = duration;
+            var v = _velocity;
+
+
+            _velocity = Vector2.right * dir * speed;
+
+            while (t > 0)
+            {
+                Rigidbody.velocity = Vector2.Lerp(v, _velocity, t / duration);
+                ;
+
+                t -= Time.deltaTime;
+
+                yield return null;
+            }
+
+            _velocity = v;
+
+            _blockMovement = false;
+
+            yield return new WaitForSeconds(0.4f);
+
+            _dashEffect = false;
+        }
+
+
         public void Throw(Vector3 dir, float force)
         {
             if (_throwRoutine != null)
@@ -284,22 +332,33 @@ namespace Graphene.Physics.SideScroller
 
             var t = 0.2f;
             var v = Vector2.zero;
-            
+
 
             _velocity = dir.normalized * force;
 
             while (t > 0)
             {
-                Rigidbody.velocity = Vector2.Lerp(v, _velocity, t/0.4f);;
-                
+                Rigidbody.velocity = Vector2.Lerp(v, _velocity, t / 0.4f);
+                ;
+
                 t -= Time.deltaTime;
-                
+
                 yield return null;
             }
 
             _velocity = v;
 
             _blockMovement = false;
+        }
+
+        public void DashStop()
+        {
+            if (_throwRoutine != null)
+                GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
+
+            _velocity = Vector2.zero;
+            _blockMovement = false;
+            _dashEffect = false;
         }
     }
 }
