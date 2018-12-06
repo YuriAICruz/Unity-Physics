@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using Graphene.Utils;
 using UnityEngine;
 
 namespace Graphene.Physics.SideScroller
@@ -14,6 +16,8 @@ namespace Graphene.Physics.SideScroller
         private float _gravity;
         private bool _blockMovement;
 
+        public bool Sliding;
+
         public event Action OnEdge;
         public event Action<int> OnWallClose;
 
@@ -21,8 +25,10 @@ namespace Graphene.Physics.SideScroller
 
         private bool _canJump;
         private float _wallDistance;
+        private float _wallSlide;
+        private Coroutine _throwRoutine;
 
-        public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera, float gravity) : base(rigidbody, collider, camera)
+        public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera, float gravity, float wallSlide) : base(rigidbody, collider, camera)
         {
             _collider = collider;
             _camera = camera;
@@ -30,6 +36,8 @@ namespace Graphene.Physics.SideScroller
 
             _radius = collider.size.x / 2;
             _height = collider.size.y;
+
+            _wallSlide = wallSlide;
 
             SetCollider(collider, rigidbody);
 
@@ -73,7 +81,7 @@ namespace Graphene.Physics.SideScroller
             var roundDir = (int) (Mathf.Sign(dir.x) * Mathf.Ceil(Mathf.Abs(dir.x)));
 
             Vector2 wdir = transformDir ? _camera.TransformDirection(new Vector3(dir.x, dir.y)) : new Vector3(dir.x, dir.y);
-            
+
             var moveDirection = GetGroundOrient(wdir).normalized;
 
             CheckSurround(wdir);
@@ -81,7 +89,7 @@ namespace Graphene.Physics.SideScroller
             if (_wall == 0 ||
                 roundDir != _sides[_wall].x ||
                 _grounded ||
-                (!_jumping &&  _wallDistance > _radius * 1.1f)
+                (!_jumping && _wallDistance > _radius * 1.1f)
             )
             {
                 _velocity.x = moveDirection.x * speed;
@@ -103,12 +111,10 @@ namespace Graphene.Physics.SideScroller
             }
             else
             {
-                if (_wall != 0 && roundDir == _sides[_wall].x && _wallDistance <= _radius * 1.1f)
+                if (_wall != 0 && roundDir == _sides[_wall].x && _wallDistance <= _radius * 1.1f && !_jumping)
                 {
-                    if (!_jumping)
-                    {
-                        _velocity.y = 0;
-                    }
+                    _velocity.y = _wallSlide;
+                    Sliding = true;
                 }
                 else
                 {
@@ -120,6 +126,7 @@ namespace Graphene.Physics.SideScroller
 
             Rigidbody.velocity = _velocity;
         }
+
 
         private Vector2 GetGroundOrient(Vector2 wdir)
         {
@@ -261,6 +268,38 @@ namespace Graphene.Physics.SideScroller
             }
 
             return 0;
+        }
+
+        public void Throw(Vector3 dir, float force)
+        {
+            if (_throwRoutine != null)
+                GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
+
+            _throwRoutine = GlobalCoroutineManager.Instance.StartCoroutine(ThrowRoutine(dir, force));
+        }
+
+        IEnumerator ThrowRoutine(Vector3 dir, float force)
+        {
+            _blockMovement = true;
+
+            var t = 0.2f;
+            var v = Vector2.zero;
+            
+
+            _velocity = dir.normalized * force;
+
+            while (t > 0)
+            {
+                Rigidbody.velocity = Vector2.Lerp(v, _velocity, t/0.4f);;
+                
+                t -= Time.deltaTime;
+                
+                yield return null;
+            }
+
+            _velocity = v;
+
+            _blockMovement = false;
         }
     }
 }

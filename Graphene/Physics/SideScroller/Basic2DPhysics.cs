@@ -42,7 +42,7 @@ namespace Graphene.Physics.SideScroller
         {
             for (int i = 0; i < _sides.Length; i++)
             {
-                var pos = Collider.transform.position + ((Vector3)_sides[i] * _radius * 0.4f) + Vector3.up * _height;
+                var pos = Collider.transform.position + ((Vector3) _sides[i] * _radius * 0.4f) + Vector3.up * _height;
 
                 var hit = Physics2D.Raycast(pos, Vector2.down, _height * 1.1f, _groundMask);
 
