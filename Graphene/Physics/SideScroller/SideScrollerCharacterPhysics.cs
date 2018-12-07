@@ -67,7 +67,7 @@ namespace Graphene.Physics.SideScroller
 
         public float Speed()
         {
-            return _velocity.magnitude;
+            return Mathf.Abs(_velocity.x);
         }
 
         public void Move(Vector2 dir, float speed, bool transformDir = true)
@@ -317,6 +317,18 @@ namespace Graphene.Physics.SideScroller
             _dashEffect = false;
         }
 
+        public void DashStop()
+        {
+            if (_throwRoutine != null)
+                GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
+
+            if(!_dashEffect) return;
+            
+            _velocity = Vector2.zero;
+            _blockMovement = false;
+            _dashEffect = false;
+        }
+
 
         public void Throw(Vector3 dir, float force)
         {
@@ -349,16 +361,6 @@ namespace Graphene.Physics.SideScroller
             _velocity = v;
 
             _blockMovement = false;
-        }
-
-        public void DashStop()
-        {
-            if (_throwRoutine != null)
-                GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
-
-            _velocity = Vector2.zero;
-            _blockMovement = false;
-            _dashEffect = false;
         }
     }
 }

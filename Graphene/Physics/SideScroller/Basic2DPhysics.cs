@@ -48,6 +48,7 @@ namespace Graphene.Physics.SideScroller
 
                 if (hit.collider == null) continue;
 
+                
                 if (_debug)
                     Debug.DrawRay(pos, Vector2.down * 1.1f, Color.green);
 
