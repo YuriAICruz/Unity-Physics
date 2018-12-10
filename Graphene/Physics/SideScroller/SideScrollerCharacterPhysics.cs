@@ -24,12 +24,16 @@ namespace Graphene.Physics.SideScroller
         private int _wall = 0;
 
         private bool _canJump;
+        private bool _freeze;
         private float _wallDistance;
         private float _wallSlide;
         private Coroutine _throwRoutine;
         private Coroutine _dashRoutine;
         private bool _dashEffect;
         private float _dashSpeedModifier = 1.4f;
+        private Vector2 _lastV;
+
+        public bool Dashing;
 
         public SideScrollerCharacterPhysics(Rigidbody2D rigidbody, CapsuleCollider2D collider, Transform camera, float gravity, float wallSlide) : base(rigidbody, collider, camera)
         {
@@ -72,9 +76,11 @@ namespace Graphene.Physics.SideScroller
 
         public void Move(Vector2 dir, float speed, bool transformDir = true)
         {
+            if (_freeze) return;
+
             if (_dashEffect)
                 speed *= _dashSpeedModifier;
-            
+
             CheckGround();
 
             if (_blockMovement)
@@ -277,10 +283,24 @@ namespace Graphene.Physics.SideScroller
             return 0;
         }
 
+
+        public void DashStop()
+        {
+            if (_throwRoutine != null)
+                GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
+
+            if (!_dashEffect) return;
+
+            Dashing = false;
+            _velocity = Vector2.zero;
+            _blockMovement = false;
+            _dashEffect = false;
+        }
+
         public void Dash(float dir, float speed, float duration)
         {
-            if(Sliding) return;
-            
+            if (Sliding) return;
+
             if (_dashRoutine != null)
                 GlobalCoroutineManager.Instance.StopCoroutine(_dashRoutine);
 
@@ -291,17 +311,18 @@ namespace Graphene.Physics.SideScroller
         {
             _blockMovement = true;
             _dashEffect = true;
+            Dashing = true;
+
+            _velocity.y = 0;
 
             var t = duration;
             var v = _velocity;
-
 
             _velocity = Vector2.right * dir * speed;
 
             while (t > 0)
             {
                 Rigidbody.velocity = Vector2.Lerp(v, _velocity, t / duration);
-                ;
 
                 t -= Time.deltaTime;
 
@@ -311,27 +332,18 @@ namespace Graphene.Physics.SideScroller
             _velocity = v;
 
             _blockMovement = false;
+            Dashing = false;
 
             yield return new WaitForSeconds(0.4f);
 
             _dashEffect = false;
         }
 
-        public void DashStop()
-        {
-            if (_throwRoutine != null)
-                GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
-
-            if(!_dashEffect) return;
-            
-            _velocity = Vector2.zero;
-            _blockMovement = false;
-            _dashEffect = false;
-        }
-
 
         public void Throw(Vector3 dir, float force)
         {
+            DashStop();
+            
             if (_throwRoutine != null)
                 GlobalCoroutineManager.Instance.StopCoroutine(_throwRoutine);
 
@@ -361,6 +373,20 @@ namespace Graphene.Physics.SideScroller
             _velocity = v;
 
             _blockMovement = false;
+        }
+
+        public void Block(bool state)
+        {
+            if (state)
+            {
+                _lastV = _velocity;
+                _velocity = Vector2.zero;
+            }
+            else
+            {
+                _velocity = _lastV;
+            }
+            _freeze = state;
         }
     }
 }
