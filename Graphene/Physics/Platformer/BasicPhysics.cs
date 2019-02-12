@@ -34,10 +34,11 @@ namespace Graphene.Physics.Platformer
             {
                 var pos = Collider.transform.position + (_sides[i] * _radius)  + Vector3.up;
 
-                if (!UnityEngine.Physics.Raycast(pos, Vector3.down, out hit, 1.1f)) continue;
+                var height = 1.1f;
+                if (!UnityEngine.Physics.Raycast(pos, Vector3.down, out hit, height)) continue;
 
                 if (_debug)
-                    Debug.DrawRay(pos, Vector3.down * 1.1f, Color.green);
+                    Debug.DrawRay(pos, Vector3.down * height, Color.green);
 
                 _standingCollider = hit.collider;
 
