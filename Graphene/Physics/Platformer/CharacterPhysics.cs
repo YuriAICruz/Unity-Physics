@@ -356,7 +356,7 @@ namespace Graphene.Physics.Platformer
             var pos = _collider.transform.position;
             var tgtPos = pos + Vector3.up * height*2;// + _collider.transform.forward * _radius;
             var dur = 0.4f;
-            Debug.Log(height);
+            // Debug.Log(height);
             while (time <= dur)
             {
                 //Rigidbody.velocity = dir * force;

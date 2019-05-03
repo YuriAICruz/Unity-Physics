@@ -23,7 +23,7 @@ namespace Graphene.Physics.Platformer
             new Vector3(1, 0, 0),
             new Vector3(0, 0, 1),
             new Vector3(-1, 0, 0),
-            new Vector3(0, 0, -1),
+            //new Vector3(0, 0, -1),
         };
 
         protected void CheckGround()
@@ -32,7 +32,7 @@ namespace Graphene.Physics.Platformer
 
             for (int i = 0; i < _sides.Length; i++)
             {
-                var pos = Collider.transform.position + (_sides[i] * _radius)  + Vector3.up;
+                var pos = Collider.transform.position + (Collider.transform.TransformDirection(_sides[i]) * _radius)  + Vector3.up;
 
                 var height = 1.1f;
                 if (!UnityEngine.Physics.Raycast(pos, Vector3.down, out hit, height)) continue;
