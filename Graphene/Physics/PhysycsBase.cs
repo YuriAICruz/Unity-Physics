@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Graphene.Physics
 {
     [Serializable]
-    public abstract class PhysycsBase
+    public abstract class PhysycsBase : MonoBehaviour
     {
         public float Speed = 3;
 

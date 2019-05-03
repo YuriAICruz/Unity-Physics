@@ -6,17 +6,11 @@ using UnityEngine.Experimental.PlayerLoop;
 
 namespace Graphene.Physics.Platformer
 {
-    [Serializable]
+    [RequireComponent(typeof(BoxCollider))]
+    [RequireComponent(typeof(Rigidbody))]
     public class EnviromentPhysics : BasicPhysics
     {
         private Vector3 _position;
-
-        public override void SetCollider(Collider collider, Rigidbody rigidbody)
-        {
-            base.SetCollider(collider, rigidbody);
-
-            // GlobalCoroutineManager.Instance.StartCoroutine(Update());
-        }
 
         public bool CheckCollision(Vector3 pos, Vector3 dir)
         {
@@ -28,25 +22,24 @@ namespace Graphene.Physics.Platformer
             return true;
         }
         
-        IEnumerator Update()
+        void Update()
         {
-            while (true)
+            if(Collider == null) return;
+            
+            var pos = CheckGround();
+
+            _position = transform.position;
+
+            if (_grounded)
             {
-                CheckGround();
-
-                _position = Collider.transform.position;
-
-                if (_grounded)
-                {
-                    yield return null;
-                    continue;
-                }
-
-                _position.y += Time.deltaTime * UnityEngine.Physics.gravity.y;
-
-                Collider.transform.position = _position;
-                yield return null;
+                var col = (BoxCollider) Collider;
+                transform.position = new Vector3(_position.x, col.center.y + col.size.y/2 + pos.y, _position.z);
+                return;
             }
+
+            _position.y += Time.deltaTime * UnityEngine.Physics.gravity.y;
+
+            transform.position = _position;
         }
     }
 }

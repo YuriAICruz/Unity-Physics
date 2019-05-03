@@ -1,5 +1,5 @@
 {
-    "name": "Physics",
+    "name": "Graphene.Physics",
     "references": [
         "Graphene.Utils",
         "Graphene.UtilsEditor"
@@ -7,5 +7,9 @@
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }

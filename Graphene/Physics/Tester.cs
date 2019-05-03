@@ -2,12 +2,14 @@
 
 namespace Graphene.Physics
 {
+    [RequireComponent(typeof(SideShooterPhysics))]
     public class Tester: MonoBehaviour
     {
         public SideShooterPhysics Physics;
 
         private void Start()
         {
+            Physics = GetComponent<SideShooterPhysics>();
             Physics.SetCollider(GetComponent<Collider2D>());
             Physics.SetPosition(transform.position);
 

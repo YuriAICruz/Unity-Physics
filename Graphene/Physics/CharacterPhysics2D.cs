@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Graphene.Physics
 {
-    public class CharacterPhysics : PhysycsBase
+    public class CharacterPhysics2D : PhysycsBase
     {
         private static float GravityForce = 3;
         [HideInInspector] public bool Grounded;

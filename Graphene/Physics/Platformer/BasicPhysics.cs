@@ -3,10 +3,15 @@ using UnityEngine;
 
 namespace Graphene.Physics.Platformer
 {
-    public abstract class BasicPhysics
+    public abstract class BasicPhysics : MonoBehaviour
     {
+        [HideInInspector]
         public Collider Collider;
+        [HideInInspector]
         public Rigidbody Rigidbody;
+
+        public LayerMask  GroundMask;
+        
         protected bool _debug = true;
         protected bool _grounded;
         protected bool _jumping;
@@ -26,16 +31,28 @@ namespace Graphene.Physics.Platformer
             //new Vector3(0, 0, -1),
         };
 
-        protected void CheckGround()
+
+        private void Start()
+        {
+            Collider = GetComponent<Collider>();
+            Rigidbody = GetComponent<Rigidbody>();
+
+            _radius = Collider.bounds.size.x/2;
+            
+            SendMessage("Setup", SendMessageOptions.DontRequireReceiver);
+        }
+
+        protected Vector3 CheckGround()
         {
             RaycastHit hit;
 
             for (int i = 0; i < _sides.Length; i++)
             {
-                var pos = Collider.transform.position + (Collider.transform.TransformDirection(_sides[i]) * _radius)  + Vector3.up;
+                var height = Collider.bounds.size.y;
 
-                var height = 1.1f;
-                if (!UnityEngine.Physics.Raycast(pos, Vector3.down, out hit, height)) continue;
+                var pos = Collider.transform.position + (Collider.transform.TransformDirection(_sides[i]) * _radius) + Vector3.up * height * 0.4f;
+
+                if (!UnityEngine.Physics.Raycast(pos, Vector3.down*2, out hit, height, GroundMask)) continue;
 
                 if (_debug)
                     Debug.DrawRay(pos, Vector3.down * height, Color.green);
@@ -51,13 +68,16 @@ namespace Graphene.Physics.Platformer
 
                 SetGrounded(true);
 
-                return;
+                return hit.point;
             }
 
             _standingCollider = null;
-            
+
             SetGrounded(false);
+            
+            return Vector3.zero;
         }
+
 
         void SetGrounded(bool state)
         {
@@ -65,12 +85,6 @@ namespace Graphene.Physics.Platformer
                 GroundState?.Invoke(state);
 
             _grounded = state;
-        }
-
-        public virtual void SetCollider(Collider collider, Rigidbody rigidbody)
-        {
-            Collider = collider;
-            Rigidbody = rigidbody;
         }
 
         protected void SetJumpState(bool state)

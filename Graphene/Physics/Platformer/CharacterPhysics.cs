@@ -7,8 +7,10 @@ using Random = UnityEngine.Random;
 
 namespace Graphene.Physics.Platformer
 {
+    [RequireComponent(typeof(CapsuleCollider))]
     public class CharacterPhysics : BasicPhysics
     {
+        [HideInInspector]
         public CapsuleCollider _collider;
         private Transform _camera;
 
@@ -24,16 +26,17 @@ namespace Graphene.Physics.Platformer
 
         private bool _blockMovement;
         private Coroutine _climbing;
+        
+        [SerializeField]
         private LayerMask _movementMask;
+        
         private Transform _target;
 
-        public CharacterPhysics(Rigidbody rigidbody, CapsuleCollider collider, Transform camera, float radius)
+        private void Setup()
         {
-            _radius = radius;
-            _collider = collider;
-            _camera = camera;
-            Rigidbody = rigidbody;
-            SetCollider(collider, rigidbody);
+            _collider = GetComponent<CapsuleCollider>();
+            _radius = _collider.radius;
+            _camera = Camera.main.transform;
 
             _movementMask |= 1 << LayerMask.NameToLayer("Level");
         }
