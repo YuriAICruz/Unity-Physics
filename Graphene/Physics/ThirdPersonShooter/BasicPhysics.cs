@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using UnityEditor.Experimental.UIElements.GraphView;
 using UnityEngine;
-using Vuforia;
 
 namespace Graphene.Physics.ThirdPersonShooter
 {
@@ -169,6 +168,7 @@ namespace Graphene.Physics.ThirdPersonShooter
 
                                     return Vector3.zero;
                                 }
+
                                 //LedgeDetection(hit, top);
                             }
                         }
@@ -275,9 +275,10 @@ namespace Graphene.Physics.ThirdPersonShooter
             for (int i = 0, n = sides.Count; i < n; i++)
             {
                 var side = transform.TransformDirection(sides[i]);
-                var ray = new Ray(transform.position + Vector3.up * Collider.bounds.size.y + side * _radius * 0.4f, Vector3.down);
+                var ray = new Ray(transform.position + 0.5f * Collider.bounds.size.y * Vector3.up, Vector3.down);
 
-                if (UnityEngine.Physics.Raycast(ray, out hit, _height * 10, Level))
+                Debug.DrawRay(ray.origin, ray.direction, Color.red);
+                if (UnityEngine.Physics.Raycast(ray, out hit, _height * 0.5f, Level))
                 {
                     if (hit.distance <= _height)
                     {
