@@ -276,7 +276,7 @@ namespace Graphene.Physics.FirstPerson
             for (int i = 0, n = sides.Count; i < n; i++)
             {
                 var side = transform.TransformDirection(sides[i]);
-                var ray = new Ray(transform.position + 0.5f * CharacterController.bounds.size.y * Vector3.up, Vector3.down);
+                var ray = new Ray(transform.position + _radius * 1.5f * side + 0.5f * CharacterController.bounds.size.y * Vector3.up, Vector3.down);
 
                 Debug.DrawRay(ray.origin, ray.direction, Color.red);
                 if (UnityEngine.Physics.Raycast(ray, out hit, _height * 0.5f, Level))
